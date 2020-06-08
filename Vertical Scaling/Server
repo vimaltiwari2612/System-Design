@@ -1,0 +1,84 @@
+public class Server{
+    
+    //threshold
+    final static int thresholdLimit = 5000;
+    //track of payload cound
+    private static int unprocessedRequest = 0;
+    //map of requestId vs Request that are being currently in process
+    private static Map<long,Request> jobIdVsRequest;
+    //map of requestId vs ReponseProcessor that have been processed
+    private static Map<long,ReponseProcessor> jobIdVsReponseProcessor;
+    //Flag to check, whether server is live or not
+    Boolean static isServerLive;
+    
+    //iniitializer
+    protected static void initServer(){
+        //init the request queue
+        //at most 5000, requests can be taken
+        jobIdVsRequest = new Map<long,Request>();
+        //inti it too
+        jobIdVsReponseProcessor = new Map<long,ReponseProcessor>();
+        //make it live
+        isServerLive = true;
+    }
+    
+    //private construstor - generally used for singleton pattern
+    private Server(){
+        //make it private so that, instantiations can be controlled
+    }
+    
+    //should provide instance or not
+    public static Server getInstance(){
+        //check if server Live && server can take request i.e. within Threshold
+        if(isServerLive && jobIdVsRequest.size()<thresholdLimit) 
+            return new Server();
+        //can't provide
+        return null;
+    }
+    
+    //check whether the request is in process
+    public static boolean isProcessing(long jobId){
+        return jobIdVsRequest.containsKey(jobId);
+    }
+    
+    //get response for a request
+    public static boolean getResponse(long jobId){
+        return jobIdVsReponseProcessor.get(jobId);
+    }
+    
+    //method to get request
+    public long sendRequest(Request request){
+        //generate job Id for this request using some logic
+        long jobId = this.getJobId(request);
+        //add to the job queue
+        jobIdVsRequest.put(jobId,request);
+        //send it for processing, add a thread and make it thread safe
+        processRequest(jobId,request);
+        //retuen a job id to track,
+        return jobId;
+    }
+    
+    private void processRequests(long jobId,Request request){
+         //code to create a thread 
+        new Thread() {
+             public void run() {
+                ReponseProcessor rp;
+                if(jobIdVsRequest.containsKey(jobId)){
+                    //proess request
+                    //some logic to process and set response
+                    rp = processedResult;
+                }
+                else{
+                    //if not found, something went worng
+                    //send error response
+                   rp = null;
+                }
+                //add the response to the map
+                jobIdVsReponseProcessor.put(jobId,rp)
+                //remove the request from Request queue to add more request
+                jobIdVsRequest.remove(jobId);
+             }
+        }.start();
+    }
+}
+

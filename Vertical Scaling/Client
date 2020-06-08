@@ -1,0 +1,37 @@
+public class Client{
+    
+    //Response Processor class will process response according to expected result
+    ResponseProcessor responseProcessor;
+    
+    public void sendRequest(Request request){
+        try{
+            Server server = Server.getInstance(); //returns instance is server is able to take the request [Max limit is 5K]
+            //if instance found, send the request
+            if(server != null){
+                //send request
+                long processId = server.sendRequest(request);
+                //make the wait time, a background process, depedning on the complexity and responsiveness of system
+                //Seperate the thread
+                this.makeItBackground(server,processId);
+                System.out.print('Waiting for response from Server');
+            }
+            else{
+               System.out.print('Server is unreachable.');
+            }
+        }catch(Exception e){
+            System.out.print('An Error occured while connecting to Server.'+e.getmessage());
+        }
+    }
+    
+    private void makeItBackground(Server server,long processId){
+        //code to create a thread 
+        new Thread() {
+             public void run() {
+                 //and let the thread wait for the response
+                while(server.isProcessing(processId));
+                //once it get the response, it will set the responseProcessor instance of the class
+                responseProcessor = server.getResponse(processId);
+             }
+        }.start();
+    }
+}
