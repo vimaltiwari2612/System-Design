@@ -1,4 +1,4 @@
-# SystemDesign
+# System-Design
 
 ***Understanding System design from Basics to implementing big systems like Whatsapp, netflix etc***
 
